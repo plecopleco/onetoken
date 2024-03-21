@@ -111,7 +111,7 @@ const Home: NextPage = () => {
               <h1>$COQWIF Airdrop</h1>
               <h3>Token balance: {tokenBlc}</h3>
               <Web3Button
-                contractAddress="0x7F83d05c59ee6B346EE31675b626bBbf5cc8169a"
+                contractAddress="0xABE251E6816d885B6C001543e28f4303B8e255d3"
                 action={async (contract) =>
                   contract.call("claimAirdrop", [
                     proofsData, // Use proofsData here
