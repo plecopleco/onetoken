@@ -18,17 +18,17 @@ const Home: NextPage = () => {
 
   async function fetchData() {
     try {
-      console.log("fetching proofs for address:" + address);
+      // console.log("fetching proofs for address:" + address);
       const response = await fetch("/tree.json");
       const treeData = await response.json();
 
       const tree = StandardMerkleTree.load(treeData);
-      console.log("JSON loaded.");
+      // console.log("JSON loaded.");
 
       setMerkleRoot(tree.root);
 
       const proofs = [];
-      console.log("loading proofs for:" + address);
+      // console.log("loading proofs for:" + address);
 
       for (const [i, v] of tree.entries()) {
         if (v[0] === address) {
@@ -38,17 +38,9 @@ const Home: NextPage = () => {
       }
       setProofsData(proofs[0]);
     } catch (error) {
-      console.log("we had an error, panic" + error);
+      // console.log("we had an error, panic" + error);
     }
   }
-
-  // useEffect(() => {
-  //   if (address) {
-  //     fetchData();
-  //   }
-  // }, [address]);
-
-  console.log(proofsData);
 
   // THIS IS THE TOKEN ADDRESS
   const { contract: tokenContract } = useContract(
