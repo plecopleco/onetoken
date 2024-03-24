@@ -55,11 +55,11 @@ export const CountDown = () => {
     return (
       <div className={myFont.className}>
         <div className="flex gap-3 items-center justify-center">
-          <h1 className="sm:text-xl md:text-2xl lg:text-5xl text-l">
+          <h1 className="sm:text-xl md:text-2xl lg:text-5xl text-xl">
             ENDS IN:
           </h1>
           <div className="flex flex-col items-center ">
-            <p className="sm:text-3xl  md:text-2xl lg:text-5xl text-l">
+            <p className="sm:text-xl md:text-2xl lg:text-5xl text-xl">
               {hours}:{minutes}:{seconds}
             </p>
           </div>

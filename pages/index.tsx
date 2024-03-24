@@ -1,128 +1,155 @@
-import {
-  ConnectWallet,
-  Web3Button,
-  useAddress,
-  useContract,
-  useTokenBalance,
-} from "@thirdweb-dev/react";
-import styles from "../styles/Home.module.css";
-import { NextPage } from "next";
-import { useState, useEffect } from "react";
-import { StandardMerkleTree } from "@openzeppelin/merkle-tree";
-import { BigNumber, utils } from "ethers";
+"use client";
 
-const Home: NextPage = () => {
-  const [merkleRoot, setMerkleRoot] = useState<string | null>(null);
-  const [proofsData, setProofsData] = useState<string[]>();
-  const address = useAddress();
+import { useEffect, useRef, useState } from "react";
+import { CountDown } from "../components/Countdown";
+import { MainLogo } from "../components/MainLogo";
+import localFont from "next/font/local";
+import { ProgressBar } from "../components/ProgressBar";
+import { FaDiscord, FaTelegramPlane } from "react-icons/fa";
+import { FaXTwitter } from "react-icons/fa6";
+import { ethers } from "ethers";
+import { Web3 } from "web3";
+import Moralis from "moralis";
 
-  async function fetchData() {
+const myFont = localFont({ src: "../pages/LuloCleanOne.otf" });
+const myFontBold = localFont({ src: "../pages/LuloCleanOneBold.otf" });
+const myTitleFont = localFont({ src: "../pages/SF-Pro-Display-Bold.otf" });
+
+function MyApp() {
+  const [total, setTotal] = useState(50000);
+  const [current, setCurrent] = useState(0);
+  const [exchangeRate, setExchangeRate] = useState<any>(null);
+
+  const fetchExchangeRate = async () => {
     try {
-      // console.log("fetching proofs for address:" + address);
-      const response = await fetch("/tree.json");
-      const treeData = await response.json();
+      const response = await Moralis.EvmApi.token.getTokenPrice({
+        chain: "0x1",
+        include: "percent_change",
+        exchange: "uniswapv3",
+        address: "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+      });
 
-      const tree = StandardMerkleTree.load(treeData);
-      // console.log("JSON loaded.");
-
-      setMerkleRoot(tree.root);
-
-      const proofs = [];
-      // console.log("loading proofs for:" + address);
-
-      for (const [i, v] of tree.entries()) {
-        if (v[0] === address) {
-          const proof = tree.getProof(i);
-          proofs.push(proof);
-        }
-      }
-      setProofsData(proofs[0]);
-    } catch (error) {
-      // console.log("we had an error, panic" + error);
+      setExchangeRate(response.result.usdPriceFormatted);
+    } catch (e) {
+      console.error(e);
     }
-  }
-
-  // THIS IS THE TOKEN ADDRESS
-  const { contract: tokenContract } = useContract(
-    "0xF5bCF3C61b688616302b14BE21eED9E7B44ab388"
-  );
-  const { data: tokenBalance } = useTokenBalance(tokenContract, address);
-
-  // Make interaction based on price amount
-  const [tokenBlc, setTokenBlc] = useState<any>();
+  };
 
   useEffect(() => {
-    if (tokenBalance) {
-      setTokenBlc(Number(tokenBalance.displayValue).toFixed(3));
+    async function fetchData() {
+      try {
+        //private RPC endpoint
+        fetchExchangeRate();
+        const web3 = new Web3(process.env.NEXT_PUBLIC_INFURA_KEY);
+
+        const a = await web3.eth.getBalance(
+          "0xdB4c5AC133Af1594e27aB2Cedc6B0c7de2E53d32"
+        );
+
+        const balanceInEther = ethers.utils.formatEther(a);
+
+        // Convert Ether to dollars (assuming 1 ETH = $2000)
+
+        const balanceInUsd = parseFloat(balanceInEther) * exchangeRate;
+        setCurrent(balanceInUsd);
+        // console.log(`Current balance in USD: $${balanceInUsd}`);
+      } catch (err) {
+        // console.log(err);
+      }
     }
-  }, [tokenBalance]);
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    if (current >= 0.8 * total) {
+      // If current reaches 80% of total, increase total by 30%
+      setTotal(total + 0.3 * total);
+    }
+  }, [current, total]); // useEffect will run whenever current or total changes
+
+  // console.log(contract);
+  const numberWithCommas = (number: number) => {
+    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  };
 
   return (
-    <main className={styles.main}>
-      <div className={styles.container}>
-        <ConnectWallet />
-        {address && (
-          <div>
-            <div
-              style={{
-                backgroundColor: "#222",
-                padding: "2rem",
-                borderRadius: "1rem",
-                textAlign: "center",
-                minWidth: "500px",
-                marginBottom: "2rem",
-                marginTop: "2rem",
-              }}
-            >
-              <h1>Create Merkle Tree</h1>
-              <button
-                onClick={() => fetchData()}
-                style={{
-                  padding: "1rem",
-                  borderRadius: "8px",
-                  backgroundColor: "#FFF",
-                  color: "#333",
-                  border: "none",
-                  cursor: "pointer",
-                  fontSize: "1rem",
-                }}
-              >
-                Generate
-              </button>
-              {merkleRoot && <p>Merkle Root Hash: {merkleRoot}</p>}
+    <div>
+      <div className=" flex flex-col items-center h-screen justify-center">
+        <div className={myFontBold.className}>
+          <MainLogo />
+        </div>
+        <div className={myFont.className}>
+          <div className="flex justify-center flex-col gap-4">
+            <CountDown />
+          </div>
+        </div>
+        <div className={myTitleFont.className}>
+          <div className="flex flex-col items-center justify-center">
+            <div className="flex justify-center items-center bg-white py-4 px-3 mt-8 rounded-lg">
+              <div className={myTitleFont.className}>
+                <h1 className="text-xs sm:text-md md:text-l lg:text-2xl text-wrap text-black  tracking-[0em]  md:tracking-[0.10em]">
+                  0xdB4c5AC133Af1594e27aB2Cedc6B0c7de2E53d32
+                </h1>
+              </div>
             </div>
-            <div
-              style={{
-                backgroundColor: "#222",
-                padding: "2rem",
-                borderRadius: "1rem",
-                textAlign: "center",
-                minWidth: "500px",
-              }}
-            >
-              <h1>$COQWIF Airdrop</h1>
-              <h3>Token balance: {tokenBlc}</h3>
-              <Web3Button
-                contractAddress="0xABE251E6816d885B6C001543e28f4303B8e255d3"
-                action={async (contract) =>
-                  contract.call("claimAirdrop", [
-                    proofsData, // Use proofsData here
-                    "100000000000000000000",
-                  ])
-                }
-                onError={() =>
-                  alert("Not eligible for airdrop or already claimed!")
-                }
-                onSuccess={() => alert("Airdrop claimed!")}
-              >
-                Claim Airdrop
-              </Web3Button>
+            <div className={myTitleFont.className}>
+              <div className="flex flex-row justify-center items-center gap-2">
+                <h1 className="text-xs md:text-md mt-4 text-wrap ">
+                  Only send ETH to the presale address.
+                </h1>
+                <div className={myTitleFont.className}>
+                  <p className="underline mt-4 text-wrap text-md">
+                    Learn more.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
-        )}
+          <div className="mt-8 md:mt-14 ">
+            <ProgressBar total={total} current={current} />
+            <div>
+              <p className="mt-5 text-center">
+                ETH RAISED (IN USD): ${numberWithCommas(current)}/$
+                {numberWithCommas(total)}
+              </p>
+            </div>
+          </div>
+          <div className="flex justify-center align-center pt-8 gap-6">
+            <div>
+              <a
+                href="https://google.com"
+                className="text-white"
+                target="_blank"
+              >
+                <FaXTwitter className="text-[40px]  md:text-[50px] cursor-pointer" />
+              </a>
+            </div>
+            <div>
+              <a
+                href="https://google.com"
+                className="text-white"
+                target="_blank"
+              >
+                <FaTelegramPlane
+                  // style={{ fontSize: "50px", cursor: "pointer" }}
+                  className="text-[40px]  md:text-[50px] cursor-pointer"
+                />
+              </a>
+            </div>
+            <div>
+              <a
+                href="https://google.com"
+                target="_blank"
+                className="text-white"
+              >
+                <FaDiscord className="text-[40px]  md:text-[50px] cursor-pointer" />
+              </a>
+            </div>
+          </div>
+        </div>
       </div>
-    </main>
+    </div>
   );
-};
+}
 
-export default Home;
+export default MyApp;
