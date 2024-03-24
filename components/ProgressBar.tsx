@@ -1,4 +1,4 @@
-export const ProgressBar = ({ total, current }) => {
+export const ProgressBar = ({ total, current }: any) => {
   // const startingDateUnix = 1711171800;
   // const finalDateUnix = 1711344600;
   // const currentDateUnix = Math.floor(Date.now() / 1000); // Convert current date to Unix timestamp
