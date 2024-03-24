@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import localFont from "next/font/local";
-import { CommonSymbolSchema } from "@thirdweb-dev/react";
 
 const myFont = localFont({ src: "../pages/LuloCleanOne.otf" });
 
