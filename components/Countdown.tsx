@@ -9,7 +9,7 @@ export const CountDown = () => {
   const [minutes, setMinutes] = useState<number | string>(0);
   const [seconds, setSeconds] = useState<number | string>(0);
 
-  let interval = useRef();
+  let interval: NodeJS.Timeout;
 
   const startTimer = () => {
     const countDownDate = 1711344600 * 1000;
@@ -26,7 +26,7 @@ export const CountDown = () => {
 
       if (differenceMilliseconds < 0) {
         // stop timer
-        clearInterval(interval.current);
+        clearInterval(interval);
       } else {
         // update timer
         setHours(formatTime(hours));
@@ -39,7 +39,7 @@ export const CountDown = () => {
   useEffect(() => {
     startTimer();
     return () => {
-      clearInterval(interval.current);
+      clearInterval(interval);
     };
   }, []);
 
